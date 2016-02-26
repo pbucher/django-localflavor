@@ -62,7 +62,6 @@ class USPhoneNumberField(CharField):
             return '%s-%s-%s' % (m.group(1), m.group(2), m.group(3))
         raise ValidationError(self.error_messages['invalid'])
 
-
 class USSocialSecurityNumberField(CharField):
     """
     A United States Social Security number.
@@ -156,3 +155,29 @@ class USPSSelect(Select):
     def __init__(self, attrs=None):
         from .us_states import USPS_CHOICES
         super(USPSSelect, self).__init__(attrs, choices=USPS_CHOICES)
+
+class USABARoutingNumberField(CharField):
+    """
+    A form field that validates input as a U.S. ABA routing transit number(aka bank routing number).
+    """
+    default_error_messages = {
+        'invalid': _('Invalid Bank routing number.'),
+        'length': _('Bank routing numbers must be in XXXXXXXXX format.'),
+    }
+
+    def clean(self, value):
+        super(USABARoutingNumberField, self).clean(value)
+        if value in EMPTY_VALUES:
+            return ''
+        if (len(value) != 9):
+            raise ValidationError(self.error_messages['length'])
+        c = 0
+        for i in list(range(0, 9, 3)):
+            c += int(value[i]) * 3
+            c += int(value[i + 1]) * 7
+            c += int(value[i + 2])
+
+        if c != 0 and c % 10 == 0:
+            return value
+        raise ValidationError(self.error_messages['invalid'])
+

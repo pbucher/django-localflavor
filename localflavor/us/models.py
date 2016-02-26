@@ -100,3 +100,24 @@ class USSocialSecurityNumberField(CharField):
         defaults = {'form_class': USSocialSecurityNumberFieldFormField}
         defaults.update(kwargs)
         return super(USSocialSecurityNumberField, self).formfield(**defaults)
+
+class USABARoutingNumberField(CharField):
+    """
+    A model field that forms represent as ``forms.USABARoutingNumberField``
+    and stores in the format ``XXXXXXXXX``.
+
+    .. versionadded:: 1.3
+    """
+    description = _("Bank Routing Number")
+
+    def __init__(self, *args, **kwargs):
+        kwargs['max_length'] = 9
+        super(USABARoutingNumberField, self).__init__(*args, **kwargs)
+
+    def formfield(self, **kwargs):
+        from localflavor.us.forms import (USABARoutingNumberField as
+            USABARoutingNumberFieldFormField)
+        defaults = {'form_class': USABARoutingNumberFieldFormField}
+        defaults.update(kwargs)
+        return super(USABARoutingNumberField, self).formfield(**defaults)
+
