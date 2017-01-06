@@ -1,6 +1,7 @@
 Changelog
 =========
 
+<<<<<<< HEAD
 2.1   (unreleased)
 ------------------
 
@@ -172,8 +173,9 @@ Modifications to existing flavors:
 Other changes:
 
 - None
+
 =======
-1.4.1   (unreleased)
+1.4.1   (2017-01-06)
 --------------------
 
 Other changes:
