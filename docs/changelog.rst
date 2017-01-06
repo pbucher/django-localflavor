@@ -172,6 +172,13 @@ Modifications to existing flavors:
 Other changes:
 
 - None
+=======
+1.4.1   (unreleased)
+--------------------
+
+Other changes:
+
+- Added translations from Transifex.
 
 1.4   (2017-01-03)
 ------------------
