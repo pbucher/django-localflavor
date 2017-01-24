@@ -1,16 +1,16 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
+
 import datetime
 
 from django import forms
-from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.test import TestCase
 
-from localflavor.bg.validators import egn_validator, eik_validator
 from localflavor.bg.models import BGEGNField, BGEIKField
 from localflavor.bg.utils import get_egn_birth_date
-
+from localflavor.bg.validators import EGNValidator, EIKValidator
 
 VALID_EGNS = (
     '7523169263',
@@ -59,6 +59,9 @@ INVALID_EIKS = (
     '1760400230152',  # Valid first checksum invalid second checksum
     'aaaaaaaaaa',
 )
+
+eik_validator = EIKValidator()
+egn_validator = EGNValidator()
 
 
 class BGLocalFlavorValidatorsTests(TestCase):

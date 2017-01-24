@@ -46,6 +46,7 @@ validate Finnish social security numbers.
    * :doc:`localflavor/gr`
    * :doc:`localflavor/hk`
    * :doc:`localflavor/hr`
+   * :doc:`localflavor/hu`
    * :doc:`localflavor/id_`
    * :doc:`localflavor/ie_`
    * :doc:`localflavor/il`
@@ -80,13 +81,13 @@ validate Finnish social security numbers.
 
 To use one of these localized components, just import the relevant subpackage.
 For example, here's how you can create a form with a field representing a
-French telephone number::
+Greek postal code::
 
     from django import forms
-    from localflavor.fr.forms import FRPhoneNumberField
+    from localflavor.gr.forms import GRPostalCodeField
 
     class MyForm(forms.Form):
-        my_french_phone_no = FRPhoneNumberField()
+        my_greek_postal_code = GRPostalCodeField()
 
 The ``localflavor`` package also includes a :doc:`generic </generic>` subpackage,
 containing useful code that is not specific to one particular country or culture.
@@ -133,18 +134,17 @@ Then add ``'localflavor'`` to your :setting:`INSTALLED_APPS` setting::
 .. note::
 
   Adding ``'localflavor'`` to your ``INSTALLED_APPS`` setting is required
-  for South_ and translations to work. Using django-localflavor without
+  for migrations and translations to work. Using django-localflavor without
   adding it to your ``INSTALLED_APPS`` setting is not recommended.
 
 .. _PyPI: https://pypi.python.org/
-.. _South: http://south.aeracode.org/
 
 Internationalization
 ====================
 
-Localflavor has its own catalog of translations, in the directory
+Local flavor has its own catalog of translations, in the directory
 ``localflavor/locale``, and it's not loaded automatically like Django's
-general catalog in ``django/conf/locale``. If you want localflavor's
+general catalog in ``django/conf/locale``. If you want local flavor's
 texts to be translated, like form fields error messages, you must include
 :mod:`localflavor` in the :setting:`INSTALLED_APPS` setting, so
 the internationalization system can find the catalog, as explained in
@@ -153,10 +153,9 @@ the internationalization system can find the catalog, as explained in
 Adding flavors
 ==============
 
-We'd love to add more of these, so please `create a ticket`_ with
-any code you'd like to contribute. One thing we ask is that you please use
-Unicode objects (``u'mystring'``) for strings, rather than setting the encoding
-in the file. See any of the existing flavors for examples.
+We'd love to add more of these, so please `create an issue or pull request`_
+with any code you'd like to contribute. See any of the existing flavors for
+examples.
 
 See the `contributing documentation`_ for how to run the tests while working on a
 local flavor.
@@ -169,8 +168,7 @@ that you might consider implementing:
   - ID verification
   - tax or social security number validator
   - car registration
-  - zip code validation
-  - phone number validation
+  - postal code validation
   - country area selects, e.g. cities, counties, states, provinces
 
 - model fields, e.g. for storing any of the above form fields' values
@@ -178,7 +176,14 @@ that you might consider implementing:
 - local translations of English area names. Join your language team at
   Transifex: https://www.transifex.com/projects/p/django-localflavor/
 
-.. _create a ticket: https://github.com/django/django-localflavor/issues
+.. note::
+
+  django-localflavor does not accept contributions of country specific phone number fields. The
+  `django-phonenumber-field`_ package has excellent support for validating phone numbers in many
+  countries and we recommend this package.
+
+.. _django-phonenumber-field: https://github.com/stefanfoulis/django-phonenumber-field
+.. _create an issue or pull request: https://github.com/django/django-localflavor/issues
 .. _contributing documentation: https://github.com/django/django-localflavor/blob/master/CONTRIBUTING.rst
 
 Releases
@@ -195,6 +200,23 @@ Version numbers follow the appropriate Python standards, e.g. PEPs 386_ and 440_
 .. _440: http://www.python.org/dev/peps/pep-0440/
 .. _`Django's release process`: https://docs.djangoproject.com/en/dev/internals/release-process/
 
+Roadmap
+-------
+
+django-localflavor releases follow `semver`_.
+Within one month of django release we would release a new verision.
+We might have an extra release if there are enough features in between django releases.
+
+=========== =========== ===============
+  Version     Django     Date
+=========== =========== ===============
+1.4         1.10         January 2017
+1.x         ...          ...
+2.0         2.0          January 2018
+=========== =========== ===============
+
+.. _semver: http://semver.org/
+
 How to migrate
 ==============
 
@@ -208,20 +230,20 @@ update your code:
 
    For example, change this::
 
-       from django.contrib.localflavor.fr.forms import FRPhoneNumberField
+       from django.contrib.localflavor.gr.forms import GRPostalCodeField
 
    ...to this::
 
-       from localflavor.fr.forms import FRPhoneNumberField
+       from localflavor.gr.forms import GRPostalCodeField
 
    Or if you used one of the shortlived ``django-localflavor-*`` packages
    change::
 
-       from django_localflavor_fr.forms import FRPhoneNumberField
+       from django_localflavor_gr.forms import GRPostalCodeField
 
    ...to this::
 
-       from localflavor.fr.forms import FRPhoneNumberField
+       from localflavor.gr.forms import GRPostalCodeField
 
 The code in the new package is the same (it was copied directly from Django),
 so you don't have to worry about backwards compatibility in terms of

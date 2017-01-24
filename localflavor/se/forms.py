@@ -1,30 +1,28 @@
 # -*- coding: utf-8 -*-
-"""
-Swedish specific Form helpers
-"""
+"""Swedish specific Form helpers."""
 from __future__ import unicode_literals
 
 import re
 
 from django import forms
-from django.utils.translation import ugettext_lazy as _
 from django.core.validators import EMPTY_VALUES
-from .se_counties import COUNTY_CHOICES
-from .utils import (id_number_checksum, validate_id_birthday,
-                    format_personal_id_number, valid_organisation, format_organisation_number)
+from django.utils.translation import ugettext_lazy as _
 
+from .se_counties import COUNTY_CHOICES
+from .utils import (format_organisation_number, format_personal_id_number, id_number_checksum, valid_organisation,
+                    validate_id_birthday)
 
 __all__ = ('SECountySelect', 'SEOrganisationNumberField',
            'SEPersonalIdentityNumberField', 'SEPostalCodeField')
 
-SWEDISH_ID_NUMBER = re.compile(r'^(?P<century>\d{2})?(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})(?P<sign>[\-+])?(?P<serial>\d{3})(?P<checksum>\d)$')
+SWEDISH_ID_NUMBER = re.compile(r'^(?P<century>\d{2})?(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})'
+                               r'(?P<sign>[\-+])?(?P<serial>\d{3})(?P<checksum>\d)$')
 SE_POSTAL_CODE = re.compile(r'^[1-9]\d{2} ?\d{2}$')
 
 
 class SECountySelect(forms.Select):
     """
-    A Select form widget that uses a list of the Swedish counties (län) as its
-    choices.
+    A Select form widget that uses a list of the Swedish counties (län) as its choices.
 
     The cleaned value is the official county code -- see
     http://en.wikipedia.org/wiki/Counties_of_Sweden for a list.
@@ -37,8 +35,7 @@ class SECountySelect(forms.Select):
 
 class SEOrganisationNumberField(forms.CharField):
     """
-    A form field that validates input as a Swedish organisation number
-    (organisationsnummer).
+    A form field that validates input as a Swedish organisation number (organisationsnummer).
 
     It accepts the same input as SEPersonalIdentityField (for sole
     proprietorships (enskild firma). However, co-ordination numbers are not
@@ -85,8 +82,7 @@ class SEOrganisationNumberField(forms.CharField):
 
 class SEPersonalIdentityNumberField(forms.CharField):
     """
-    A form field that validates input as a Swedish personal identity number
-    (personnummer).
+    A form field that validates input as a Swedish personal identity number (personnummer).
 
     The correct formats are YYYYMMDD-XXXX, YYYYMMDDXXXX, YYMMDD-XXXX,
     YYMMDDXXXX and YYMMDD+XXXX.
@@ -145,6 +141,7 @@ class SEPersonalIdentityNumberField(forms.CharField):
 class SEPostalCodeField(forms.RegexField):
     """
     A form field that validates input as a Swedish postal code (postnummer).
+
     Valid codes consist of five digits (XXXXX). The number can optionally be
     formatted with a space after the third digit (XXX XX).
 

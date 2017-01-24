@@ -3,11 +3,12 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from localflavor.generic.models import DeprecatedPhoneNumberField
 from . import forms
 from .nl_provinces import PROVINCE_CHOICES
-from .validators import (NLBankAccountNumberFieldValidator,
-                         NLPhoneNumberFieldValidator,
-                         NLSoFiNumberFieldValidator, NLZipCodeFieldValidator)
+from .validators import (NLBankAccountNumberFieldValidator, NLPhoneNumberFieldValidator,
+                         NLSoFiNumberFieldValidator,
+                         NLZipCodeFieldValidator)
 
 
 class NLZipCodeField(models.CharField):
@@ -42,10 +43,11 @@ class NLZipCodeField(models.CharField):
 
 class NLProvinceField(models.CharField):
     """
-    A Dutch Provice field.
+    A Dutch Province field.
 
     .. versionadded:: 1.3
     """
+
     description = _('Dutch province')
 
     def __init__(self, *args, **kwargs):
@@ -55,15 +57,21 @@ class NLProvinceField(models.CharField):
         })
         super(NLProvinceField, self).__init__(*args, **kwargs)
 
+    def deconstruct(self):
+        name, path, args, kwargs = super(NLProvinceField, self).deconstruct()
+        del kwargs['choices']
+        return name, path, args, kwargs
+
 
 class NLSoFiNumberField(models.CharField):
     """
-    A Dutch social security number (SoFi)
+    A Dutch social security number (SoFi).
 
     This model field uses :class:`validators.NLSoFiNumberFieldValidator` for validation.
 
     .. versionadded:: 1.3
     """
+
     description = _('Dutch social security number (SoFi)')
 
     validators = [NLSoFiNumberFieldValidator()]
@@ -78,14 +86,15 @@ class NLSoFiNumberField(models.CharField):
         return super(NLSoFiNumberField, self).formfield(**defaults)
 
 
-class NLPhoneNumberField(models.CharField):
+class NLPhoneNumberField(models.CharField, DeprecatedPhoneNumberField):
     """
-    Dutch phone number model field
+    Dutch phone number model field.
 
     This model field uses :class:`validators.NLPhoneNumberFieldValidator` for validation.
 
     .. versionadded:: 1.3
     """
+
     description = _('Dutch phone number')
 
     validator = [NLPhoneNumberFieldValidator()]
@@ -108,6 +117,7 @@ class NLBankAccountNumberField(models.CharField):
 
     .. versionadded:: 1.1
     """
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('max_length', 10)
         super(NLBankAccountNumberField, self).__init__(*args, **kwargs)

@@ -3,9 +3,7 @@ from __future__ import unicode_literals
 
 from django.test import SimpleTestCase
 
-from localflavor.lt.forms import (LTIDCodeField, LTMunicipalitySelect,
-                                  LTCountySelect, LTPhoneField,
-                                  LTPostalCodeField)
+from localflavor.lt.forms import LTCountySelect, LTIDCodeField, LTMunicipalitySelect, LTPhoneField, LTPostalCodeField
 
 
 class LTLocalFlavorTests(SimpleTestCase):
@@ -142,7 +140,6 @@ class LTLocalFlavorTests(SimpleTestCase):
                    '8 600 00 000 o': [errors['non-digit']],
                    'o 600 00 000': [errors['non-digit']]}
         self.assertFieldOutput(LTPhoneField, {}, invalid)
-
 
     def test_LTPhoneField_emergency(self):
         errors = LTPhoneField().error_messages

@@ -1,14 +1,12 @@
 from django.test import SimpleTestCase
 
-from localflavor.gr.forms import (GRPhoneNumberField, GRMobilePhoneNumberField,
-                                  GRTaxNumberCodeField, GRPostalCodeField)
+from localflavor.gr.forms import GRMobilePhoneNumberField, GRPhoneNumberField, GRPostalCodeField, GRTaxNumberCodeField
 
 
 class GRLocalFlavorTests(SimpleTestCase):
 
     def test_GRTaxNumberField(self):
-        """ The valid tests are from greek tax numbers (AFMs) found on the internet
-        with a google search. """
+        """The valid tests are from greek tax numbers (AFMs) found on the internet with a google search."""
         error = ['Enter a valid greek tax number (9 digits).']
         valid = {
             '090051291': '090051291',

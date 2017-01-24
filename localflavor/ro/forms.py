@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
-"""
-Romanian specific form helpers.
-"""
+"""Romanian specific form helpers."""
 from __future__ import unicode_literals
 
 import datetime
 import re
 
 from django.core.validators import EMPTY_VALUES
-from django.forms import ValidationError, Field, RegexField, Select
+from django.forms import Field, RegexField, Select, ValidationError
 from django.utils.translation import ugettext_lazy as _
+
+from localflavor.generic.forms import DeprecatedPhoneNumberFormFieldMixin
 
 from ..generic.forms import IBANFormField
 from .ro_counties import COUNTIES_CHOICES
-
 
 phone_digits_re = re.compile(r'^[0-9\-\.\(\)\s]{3,20}$')
 
 
 class ROCIFField(RegexField):
     """
-    A Romanian fiscal identity code (CIF) field
+    A Romanian fiscal identity code (CIF) field.
 
     For CIF validation algorithm see: https://ro.wikipedia.org/wiki/Cod_de_Identificare_Fiscal%C4%83
     """
+
     default_error_messages = {
         'invalid': _("Enter a valid CIF."),
     }
@@ -34,7 +34,7 @@ class ROCIFField(RegexField):
 
     def clean(self, value):
         """
-        CIF validation
+        CIF validation.
 
         Args:
             value: the CIF code
@@ -68,10 +68,11 @@ class ROCIFField(RegexField):
 
 class ROCNPField(RegexField):
     """
-    A Romanian personal identity code (CNP) field
+    A Romanian personal identity code (CNP) field.
 
     For CNP validation algorithm see: https://ro.wikipedia.org/wiki/Cod_numeric_personal
     """
+
     default_error_messages = {
         'invalid': _("Enter a valid CNP."),
     }
@@ -82,7 +83,7 @@ class ROCNPField(RegexField):
 
     def clean(self, value):
         """
-        CNP validations
+        CNP validations.
 
         Args:
             value: the CNP code
@@ -118,9 +119,9 @@ class ROCNPField(RegexField):
 
 class ROCountyField(Field):
     """
-    A form field that validates its input is a Romanian county name or
-    abbreviation. It normalizes the input to the standard vehicle registration
-    abbreviation for the given county.
+    A form field that validates its input is a Romanian county name or abbreviation.
+
+    It normalizes the input to the standard vehicle registration abbreviation for the given county.
 
     WARNING: This field will only accept names written with diacritics (using comma bellow for ș and ț); consider
     using ROCountySelect if this behavior is unacceptable for you
@@ -134,6 +135,7 @@ class ROCountyField(Field):
         | Arges => invalid (no diacritic)
 
     """
+
     default_error_messages = {
         'invalid': 'Enter a Romanian county code or name.',
     }
@@ -167,10 +169,7 @@ class ROCountyField(Field):
 
 
 class ROCountySelect(Select):
-    """
-    A Select widget that uses a list of Romanian counties (județe) as its
-    choices.
-    """
+    """A Select widget that uses a list of Romanian counties (județe) as its choices."""
 
     def __init__(self, attrs=None):
         super(ROCountySelect, self).__init__(attrs, choices=COUNTIES_CHOICES)
@@ -178,7 +177,7 @@ class ROCountySelect(Select):
 
 class ROIBANField(IBANFormField):
     """
-    Romanian International Bank Account Number (IBAN) field
+    Romanian International Bank Account Number (IBAN) field.
 
     .. versionchanged:: 1.1
         Validation error messages changed to the messages used in :class:`.IBANFormField`
@@ -188,12 +187,14 @@ class ROIBANField(IBANFormField):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ROIBANField, self).__init__(use_nordea_extensions=False, include_countries=('RO',), **kwargs)
+        kwargs['use_nordea_extensions'] = False
+        kwargs['include_countries'] = ('RO',)
+        super(ROIBANField, self).__init__(*args, **kwargs)
 
 
-class ROPhoneNumberField(RegexField):
+class ROPhoneNumberField(RegexField, DeprecatedPhoneNumberFormFieldMixin):
     """
-    Romanian phone number field
+    Romanian phone number field.
 
     .. versionchanged:: 1.1
 
@@ -203,9 +204,10 @@ class ROPhoneNumberField(RegexField):
         | Official documentation (in Romanian): http://www.ancom.org.ro/pnn_1300
 
     """
+
     default_error_messages = {
         'invalid_length':
-            _('Phone numbers may only have 7 or 10 digits, except the ' +
+            _('Phone numbers may only have 7 or 10 digits, except the '
               'national short numbers which have 3 to 6 digits'),
         'invalid_long_format':
             _('Normal phone numbers (7 or 10 digits) must begin with "0"'),
@@ -246,6 +248,7 @@ class ROPhoneNumberField(RegexField):
 
 class ROPostalCodeField(RegexField):
     """Romanian postal code field."""
+
     default_error_messages = {
         'invalid': _('Enter a valid postal code in the format XXXXXX'),
     }

@@ -2,9 +2,7 @@ from __future__ import unicode_literals
 
 from django.test import SimpleTestCase
 
-from localflavor.in_.forms import (INZipCodeField, INStateField,
-                                   INAadhaarNumberField,
-                                   INStateSelect, INPhoneNumberField)
+from localflavor.in_.forms import INAadhaarNumberField, INPhoneNumberField, INStateField, INStateSelect, INZipCodeField
 
 
 class INLocalFlavorTests(SimpleTestCase):
@@ -86,7 +84,7 @@ class INLocalFlavorTests(SimpleTestCase):
 
     def test_INAadhaarNumberField(self):
         error_format = ['Enter a valid Aadhaar number in XXXX XXXX XXXX or '
-                                                    'XXXX-XXXX-XXXX format.']
+                        'XXXX-XXXX-XXXX format.']
         valid = {
             '3603-1178-8988': '3603 1178 8988',
             '1892 3114 7727': '1892 3114 7727',

@@ -2,14 +2,17 @@ from __future__ import unicode_literals
 
 import re
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from localflavor.au.forms import (AUPostCodeField, AUPhoneNumberField,
-                                  AUStateSelect)
+from localflavor.au import forms, models
+from localflavor.au.validators import AUBusinessNumberFieldValidator, AUTaxFileNumberFieldValidator
+
 from .forms import AustralianPlaceForm
+from .models import AustralianPlace
 
-
-SELECTED_OPTION_PATTERN = r'<option value="%s" selected="selected">'
+# From Django 1.11, HTML5 syntax is used (selected)
+SELECTED_OPTION_PATTERN = r'<option value="%s" selected(="selected")?>'
 BLANK_OPTION_PATTERN = r'<option value="">'
 INPUT_VALUE_PATTERN = r'<input[^>]*value="%s"[^>]*>'
 
@@ -23,16 +26,18 @@ class AULocalflavorTests(TestCase):
              'name': 'dummy',
              'postcode': '1234',
              'postcode_required': '4321',
+             'abn': '74457506140',
+             'tfn': '123456782'
              })
 
     def test_get_display_methods(self):
-        """ Ensure get_*_display() methods are added to model instances. """
+        """Ensure get_*_display() methods are added to model instances."""
         place = self.form.save()
         self.assertEqual(place.get_state_display(), 'Western Australia')
         self.assertEqual(place.get_state_required_display(), 'Queensland')
 
     def test_default_values(self):
-        """ Ensure that default values are selected in forms. """
+        """Ensure that default values are selected in forms."""
         form = AustralianPlaceForm()
         self.assertTrue(re.search(SELECTED_OPTION_PATTERN % 'NSW',
                                   str(form['state_default'])))
@@ -40,21 +45,29 @@ class AULocalflavorTests(TestCase):
                                   str(form['postcode_default'])))
 
     def test_required(self):
-        """ Test that required AUStateFields throw appropriate errors. """
+        """Test that required AUStateFields throw appropriate errors."""
         form = AustralianPlaceForm({'state': 'NSW', 'name': 'Wollongong'})
         self.assertFalse(form.is_valid())
+        self.assertEqual(set(form.errors.keys()),
+                         set(('state_required',
+                              'postcode_required',
+                              'abn', 'tfn')))
         self.assertEqual(
             form.errors['state_required'], ['This field is required.'])
         self.assertEqual(
             form.errors['postcode_required'], ['This field is required.'])
+        self.assertEqual(
+            form.errors['abn'], ['This field is required.'])
+        self.assertEqual(
+            form.errors['tfn'], ['This field is required.'])
 
     def test_field_blank_option(self):
-        """ Test that the empty option is there. """
+        """Test that the empty option is there."""
         self.assertTrue(re.search(BLANK_OPTION_PATTERN,
                                   str(self.form['state'])))
 
     def test_selected_values(self):
-        """ Ensure selected states match the initial values provided. """
+        """Ensure selected states match the initial values provided."""
         self.assertTrue(re.search(SELECTED_OPTION_PATTERN % 'WA',
                                   str(self.form['state'])))
         self.assertTrue(re.search(SELECTED_OPTION_PATTERN % 'QLD',
@@ -65,7 +78,7 @@ class AULocalflavorTests(TestCase):
                                   str(self.form['postcode_required'])))
 
     def test_AUStateSelect(self):
-        f = AUStateSelect()
+        f = forms.AUStateSelect()
         out = '''<select name="state">
 <option value="ACT">Australian Capital Territory</option>
 <option value="NSW" selected="selected">New South Wales</option>
@@ -88,7 +101,7 @@ class AULocalflavorTests(TestCase):
             'abcd': error_format,
             '20001': ['Ensure this value has at most 4 characters (it has 5).'] + error_format,
         }
-        self.assertFieldOutput(AUPostCodeField, valid, invalid)
+        self.assertFieldOutput(forms.AUPostCodeField, valid, invalid)
 
     def test_AUPhoneNumberField(self):
         error_format = ['Phone numbers must contain 10 digits.']
@@ -105,4 +118,184 @@ class AULocalflavorTests(TestCase):
             '123': error_format,
             '1800DJANGO': error_format,
         }
-        self.assertFieldOutput(AUPhoneNumberField, valid, invalid)
+        self.assertFieldOutput(forms.AUPhoneNumberField, valid, invalid)
+
+    def test_abn(self):
+        error_format = ['Enter a valid ABN.']
+        valid = {
+            '53004085616': '53004085616',
+            '53 004 085 616': '53004085616',
+        }
+        invalid = {
+            '53004085617': error_format,
+            '5300A085616': error_format,
+        }
+        self.assertFieldOutput(forms.AUBusinessNumberField, valid, invalid)
+
+    def test_tfn(self):
+        error_format = ['Enter a valid TFN.']
+        valid = {
+            '123456782': '123456782',
+            '123 456 782': '123 456 782'
+        }
+        invalid = {
+            '123456789': error_format,    # wrong number
+            '12345678B': error_format,    # letter at the end
+        }
+        self.assertFieldOutput(forms.AUTaxFileNumberField, valid, invalid)
+
+
+class AULocalFlavorAUBusinessNumberFieldValidatorTests(TestCase):
+
+    def test_no_error_for_a_valid_abn(self):
+        """Test a valid ABN does not cause an error."""
+        valid_abn = '53004085616'
+
+        validator = AUBusinessNumberFieldValidator()
+
+        validator(valid_abn)
+
+    def test_raises_error_for_abn_containing_a_letter(self):
+        """Test an ABN containing a letter is invalid."""
+        invalid_abn = '5300408561A'
+
+        validator = AUBusinessNumberFieldValidator()
+
+        self.assertRaises(ValidationError, lambda: validator(invalid_abn))
+
+    def test_raises_error_for_too_short_abn(self):
+        """Test an ABN with fewer than eleven digits is invalid."""
+        invalid_abn = '5300408561'
+
+        validator = AUBusinessNumberFieldValidator()
+
+        self.assertRaises(ValidationError, lambda: validator(invalid_abn))
+
+    def test_raises_error_for_too_long_abn(self):
+        """Test an ABN with more than eleven digits is invalid."""
+        invalid_abn = '530040856160'
+        validator = AUBusinessNumberFieldValidator()
+        self.assertRaises(ValidationError, lambda: validator(invalid_abn))
+
+    def test_raises_error_for_whitespace(self):
+        """Test an ABN can be valid when it contains whitespace."""
+        # NB: Form field should strip the whitespace before regex valdation is run.
+        invalid_abn = '5300 4085 616'
+
+        validator = AUBusinessNumberFieldValidator()
+
+        self.assertRaises(ValidationError, lambda: validator(invalid_abn))
+
+    def test_raises_error_for_invalid_abn(self):
+        """Test that an ABN must pass the ATO's validation algorithm."""
+        invalid_abn = '53004085617'
+
+        validator = AUBusinessNumberFieldValidator()
+
+        self.assertRaises(ValidationError, lambda: validator(invalid_abn))
+
+
+class AULocalFlavorAUTaxFileNumberFieldValidatorTests(TestCase):
+
+    def test_no_error_for_a_valid_tfn(self):
+        """Test a valid TFN does not cause an error."""
+        valid_tfn = '123456782'
+        validator = AUTaxFileNumberFieldValidator()
+        validator(valid_tfn)
+
+    def test_no_error_for_valid_tfn_with_whitespace(self):
+        """Test a TFN can be valid when it contains whitespace."""
+        valid_tfn = '123 456 782'
+        validator = AUTaxFileNumberFieldValidator()
+        validator(valid_tfn)
+
+    def test_raises_error_for_tfn_containing_a_letter(self):
+        """Test an TFN containing a letter is invalid."""
+        invalid_tfn = '12345678W'
+        validator = AUTaxFileNumberFieldValidator()
+        self.assertRaises(ValidationError, lambda: validator(invalid_tfn))
+
+    def test_raises_error_for_too_short_tfn(self):
+        """Test a TFN with fewer than 8 digits is invalid."""
+        invalid_tfn = '1234567'
+        validator = AUTaxFileNumberFieldValidator()
+        self.assertRaises(ValidationError, lambda: validator(invalid_tfn))
+
+    def test_raises_error_for_too_long_tfn(self):
+        """Test a TFN with more than 9 digits is invalid."""
+        invalid_tfn = '1234567890'
+        validator = AUTaxFileNumberFieldValidator()
+        self.assertRaises(ValidationError, lambda: validator(invalid_tfn))
+
+    def test_raises_error_for_invalid_tfn(self):
+        """Test that a TFN must pass the ATO's validation algorithm."""
+        invalid_tfn = '123456783'
+        validator = AUTaxFileNumberFieldValidator()
+        self.assertRaises(ValidationError, lambda: validator(invalid_tfn))
+
+
+class AULocalFlavorAUBusinessNumberModelTests(TestCase):
+
+    def test_AUBusinessNumberModel_invalid_abn_raises_error(self):
+
+        place = AustralianPlace(**{
+            'state': 'WA',
+            'state_required': 'QLD',
+            'name': 'dummy',
+            'postcode': '1234',
+            'postcode_required': '4321',
+            'abn': '5300 4085 616 INVALID',
+            'tfn': '123456782'
+        })
+
+        self.assertRaises(ValidationError, place.clean_fields)
+
+
+class AULocalFlavourAUBusinessNumberFormFieldTests(TestCase):
+
+    def test_abn_with_spaces_remains_unchanged(self):
+        """Test that an ABN with the formatting we expect is unchanged."""
+        field = forms.AUBusinessNumberField()
+
+        self.assertEqual('53 004 085 616', field.prepare_value('53 004 085 616'))
+
+    def test_spaces_are_reconfigured(self):
+        """Test that an ABN with formatting we don't expect is transformed."""
+        field = forms.AUBusinessNumberField()
+
+        self.assertEqual('53 004 085 616', field.prepare_value('53004085616'))
+        self.assertEqual('53 004 085 616', field.prepare_value('53 0 04 08561 6'))
+
+
+class AULocalFlavourAUTaxFileNumberFormFieldTests(TestCase):
+
+    def test_tfn_with_spaces_remains_unchanged(self):
+        """Test that a TFN with the formatting we expect is unchanged."""
+        field = forms.AUTaxFileNumberField()
+
+        self.assertEqual('123 456 782', field.prepare_value('123 456 782'))
+
+    def test_spaces_are_reconfigured(self):
+        """Test that a TFN with formatting we don't expect is transformed."""
+        field = forms.AUTaxFileNumberField()
+
+        self.assertEqual('123 456 782', field.prepare_value('123456782'))
+        self.assertEqual('123 456 782', field.prepare_value('12 345 678 2'))
+
+
+class AULocalFlavourAUBusinessNumberModelFieldTests(TestCase):
+
+    def test_to_python_strips_whitespace(self):
+        """Test the value is stored without whitespace."""
+        field = models.AUBusinessNumberField()
+
+        self.assertEqual('53004085616', field.to_python('53 004 085 616'))
+
+
+class AULocalFlavourAUTaxFileNumberModelFieldTests(TestCase):
+
+    def test_to_python_strips_whitespace(self):
+        """Test the value is stored without whitespace."""
+        field = models.AUTaxFileNumberField()
+
+        self.assertEqual('123456782', field.to_python('123 456 782'))

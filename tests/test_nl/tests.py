@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django import db
 from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase
 
@@ -62,6 +61,14 @@ class NLLocalFlavorValidatorTests(SimpleTestCase):
         ]
         self.assert_validator(validators.NLPhoneNumberFieldValidator(), valid, invalid)
 
+    def test_NLPhoneNumberValidator_deconstruct(self):
+        nlphone1 = validators.NLPhoneNumberFieldValidator()
+        nlphone2 = validators.NLPhoneNumberFieldValidator()
+        self.assertEqual(nlphone1, nlphone2, msg="NLPhoneNumberFieldValidator are not equal.")
+
+        # Call to the required deconstruct method to see if it exists.
+        nlphone1.deconstruct()
+
     def test_NLBankAccountNumberFieldValidator(self):
         valid = [
             '0417164300',
@@ -87,7 +94,6 @@ class NLLocalFlavorModelTests(SimpleTestCase):
         self.assertEqual(field.to_python(None), None)
 
         self.assertIsInstance(field.formfield(), forms.NLZipCodeField)
-
 
     def test_NL_model(self):
         m = NLPlace(**{

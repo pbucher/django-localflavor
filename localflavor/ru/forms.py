@@ -1,6 +1,4 @@
-"""
-Russian-specific forms helpers
-"""
+"""Russian-specific forms helpers."""
 from __future__ import unicode_literals
 
 import re
@@ -10,22 +8,19 @@ from django.utils.translation import ugettext_lazy as _
 
 from .ru_regions import RU_COUNTY_CHOICES, RU_REGIONS_CHOICES
 
-
 phone_digits_re = re.compile(r'^(?:[78]-?)?(\d{3})[-\.]?(\d{3})[-\.]?(\d{4})$')
 
 
 class RUCountySelect(Select):
-    """
-    A Select widget that uses a list of Russian Counties as its choices.
-    """
+    """A Select widget that uses a list of Russian Counties as its choices."""
+
     def __init__(self, attrs=None):
         super(RUCountySelect, self).__init__(attrs, choices=RU_COUNTY_CHOICES)
 
 
 class RURegionSelect(Select):
-    """
-    A Select widget that uses a list of Russian Regions as its choices.
-    """
+    """A Select widget that uses a list of Russian Regions as its choices."""
+
     def __init__(self, attrs=None):
         super(RURegionSelect, self).__init__(attrs, choices=RU_REGIONS_CHOICES)
 
@@ -33,8 +28,10 @@ class RURegionSelect(Select):
 class RUPostalCodeField(RegexField):
     """
     Russian Postal code field.
+
     Format: XXXXXX, where X is any digit, and first digit is not zero.
     """
+
     default_error_messages = {
         'invalid': _('Enter a postal code in the format XXXXXX.'),
     }
@@ -46,9 +43,11 @@ class RUPostalCodeField(RegexField):
 
 class RUPassportNumberField(RegexField):
     """
-    Russian internal passport number format:
+    Russian internal passport number format.
+
     XXXX XXXXXX where X - any digit.
     """
+
     default_error_messages = {
         'invalid': _('Enter a passport number in the format XXXX XXXXXX.'),
     }
@@ -60,9 +59,11 @@ class RUPassportNumberField(RegexField):
 
 class RUAlienPassportNumberField(RegexField):
     """
-    Russian alien's passport number format:
+    Russian alien's passport number format.
+
     XX XXXXXXX where X - any digit.
     """
+
     default_error_messages = {
         'invalid': _('Enter a passport number in the format XX XXXXXXX.'),
     }

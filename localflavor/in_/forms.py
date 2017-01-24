@@ -1,6 +1,4 @@
-"""
-India-specific Form helpers.
-"""
+"""India-specific Form helpers."""
 
 from __future__ import unicode_literals
 
@@ -8,12 +6,13 @@ import re
 
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
-from django.forms.fields import Field, RegexField, CharField, Select
+from django.forms.fields import CharField, Field, RegexField, Select
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
-from .in_states import STATES_NORMALIZED, STATE_CHOICES
+from localflavor.generic.forms import DeprecatedPhoneNumberFormFieldMixin
 
+from .in_states import STATE_CHOICES, STATES_NORMALIZED
 
 phone_digits_re = re.compile(r"""
 (
@@ -40,10 +39,8 @@ aadhaar_re = re.compile(r"^(?P<part1>\d{4})[-\ ]?(?P<part2>\d{4})[-\ ]?(?P<part3
 
 
 class INZipCodeField(RegexField):
-    """
-    A form field that validates input as an Indian zip code, with the
-    format XXXXXXX.
-    """
+    """A form field that validates input as an Indian zip code, with the format XXXXXXX."""
+
     default_error_messages = {
         'invalid': _('Enter a zip code in the format XXXXXX or XXX XXX.'),
     }
@@ -63,8 +60,9 @@ class INZipCodeField(RegexField):
 
 class INStateField(Field):
     """
-    A form field that validates its input is a Indian state name or
-    abbreviation. It normalizes the input to the standard two-letter vehicle
+    A form field that validates its input is a Indian state name or abbreviation.
+
+    It normalizes the input to the standard two-letter vehicle
     registration abbreviation for the given state or union territory
 
     .. versionchanged:: 1.1
@@ -73,6 +71,7 @@ class INStateField(Field):
        https://en.wikipedia.org/wiki/Telangana#Bifurcation_of_Andhra_Pradesh
 
     """
+
     default_error_messages = {
         'invalid': _('Enter an Indian state or territory.'),
     }
@@ -95,8 +94,7 @@ class INStateField(Field):
 
 class INAadhaarNumberField(Field):
     """
-    A form field for Aadhaar number issued by
-    Unique Identification Authority of India (UIDAI).
+    A form field for Aadhaar number issued by Unique Identification Authority of India (UIDAI).
 
     Checks the following rules to determine whether the number is valid:
 
@@ -113,6 +111,7 @@ class INAadhaarNumberField(Field):
     More information can be found at
     http://uidai.gov.in/what-is-aadhaar-number.html
     """
+
     default_error_messages = {
         'invalid': _('Enter a valid Aadhaar number in XXXX XXXX XXXX or '
                      'XXXX-XXXX-XXXX format.'),
@@ -137,8 +136,7 @@ class INAadhaarNumberField(Field):
 
 class INStateSelect(Select):
     """
-    A Select widget that uses a list of Indian states/territories as its
-    choices.
+    A Select widget that uses a list of Indian states/territories as its choices.
 
     .. versionchanged:: 1.1
 
@@ -146,20 +144,23 @@ class INStateSelect(Select):
        https://en.wikipedia.org/wiki/Telangana#Bifurcation_of_Andhra_Pradesh
 
     """
+
     def __init__(self, attrs=None):
         super(INStateSelect, self).__init__(attrs, choices=STATE_CHOICES)
 
 
-class INPhoneNumberField(CharField):
+class INPhoneNumberField(CharField, DeprecatedPhoneNumberFormFieldMixin):
     """
-    INPhoneNumberField validates that the data is a valid Indian phone number,
-    including the STD code. It's normalised to 0XXX-XXXXXXX or 0XXX XXXXXXX
+    INPhoneNumberField validates that the data is a valid Indian phone number, including the STD code.
+
+    It's normalised to 0XXX-XXXXXXX or 0XXX XXXXXXX
     format. The first string is the STD code which is a '0' followed by 2-4
     digits. The second string is 8 digits if the STD code is 3 digits, 7
     digits if the STD code is 4 digits and 6 digits if the STD code is 5
     digits. The second string will start with numbers between 1 and 6. The
     separator is either a space or a hyphen.
     """
+
     default_error_messages = {
         'invalid': _('Phone numbers must be in 02X-8X or 03X-7X or 04X-6X format.'),
     }

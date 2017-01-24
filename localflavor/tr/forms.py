@@ -4,21 +4,24 @@ import re
 
 from django.core.validators import EMPTY_VALUES
 from django.forms import ValidationError
-from django.forms.fields import Field, RegexField, Select, CharField
+from django.forms.fields import CharField, Field, RegexField, Select
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
-from .tr_provinces import PROVINCE_CHOICES
+from localflavor.generic.forms import DeprecatedPhoneNumberFormFieldMixin
 
+from .tr_provinces import PROVINCE_CHOICES
 
 phone_digits_re = re.compile(r'^(\+90|0)? ?(([1-9]\d{2})|\([1-9]\d{2}\)) ?([2-9]\d{2} ?\d{2} ?\d{2})$')
 
 
 class TRPostalCodeField(RegexField):
     """
-    A form field that validates input as a Turkish zip code. Valid codes
-    consist of five digits.
+    A form field that validates input as a Turkish zip code.
+
+    Valid codes consist of five digits.
     """
+
     default_error_messages = {
         'invalid': _('Enter a postal code in the format XXXXX.'),
     }
@@ -39,12 +42,14 @@ class TRPostalCodeField(RegexField):
         return value
 
 
-class TRPhoneNumberField(CharField):
+class TRPhoneNumberField(CharField, DeprecatedPhoneNumberFormFieldMixin):
     """
-    A form field that validates input as a Turkish phone number. The correct
-    format is 0xxx xxx xxxx. +90xxx xxx xxxx and inputs without spaces also
+    A form field that validates input as a Turkish phone number.
+
+    The correct format is 0xxx xxx xxxx. +90xxx xxx xxxx and inputs without spaces also
     validates. The result is normalized to xxx xxx xxxx format.
     """
+
     default_error_messages = {
         'invalid': _('Phone numbers must be in 0XXX XXX XXXX format.'),
     }
@@ -63,6 +68,7 @@ class TRPhoneNumberField(CharField):
 class TRIdentificationNumberField(Field):
     """
     A Turkey Identification Number number.
+
     See: http://tr.wikipedia.org/wiki/T%C3%BCrkiye_Cumhuriyeti_Kimlik_Numaras%C4%B1
 
     Checks the following rules to determine whether the number is valid:
@@ -73,6 +79,7 @@ class TRIdentificationNumberField(Field):
           (sum(1st, 3rd, 5th, 7th, 9th)*7 - sum(2nd,4th,6th,8th)) % 10 = 10th digit
           sum(1st to 10th) % 10 = 11th digit
     """
+
     default_error_messages = {
         'invalid': _('Enter a valid Turkish Identification number.'),
         'not_11': _('Turkish Identification number must be 11 digits.'),
@@ -105,8 +112,7 @@ class TRIdentificationNumberField(Field):
 
 
 class TRProvinceSelect(Select):
-    """
-    A Select widget that uses a list of provinces in Turkey as its choices.
-    """
+    """A Select widget that uses a list of provinces in Turkey as its choices."""
+
     def __init__(self, attrs=None):
         super(TRProvinceSelect, self).__init__(attrs, choices=PROVINCE_CHOICES)

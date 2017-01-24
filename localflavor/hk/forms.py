@@ -1,16 +1,14 @@
-"""
-Hong Kong specific Form helpers
-"""
+"""Hong Kong specific Form helpers."""
 from __future__ import unicode_literals
 
 import re
 
 from django.core.validators import EMPTY_VALUES
-from django.forms import CharField
-from django.forms import ValidationError
+from django.forms import CharField, ValidationError
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
+from localflavor.generic.forms import DeprecatedPhoneNumberFormFieldMixin
 
 hk_phone_digits_re = re.compile(r'^(?:852-?)?(\d{4})[-\.]?(\d{4})$')
 hk_special_numbers = ('999', '992', '112')
@@ -19,7 +17,7 @@ hk_formats = ['XXXX-XXXX', '852-XXXX-XXXX', '(+852) XXXX-XXXX',
               'XXXX XXXX', 'XXXXXXXX']
 
 
-class HKPhoneNumberField(CharField):
+class HKPhoneNumberField(CharField, DeprecatedPhoneNumberFormFieldMixin):
     """
     A form field that validates Hong Kong phone numbers.
 
@@ -33,6 +31,7 @@ class HKPhoneNumberField(CharField):
 
     http://en.wikipedia.org/wiki/Telephone_numbers_in_Hong_Kong
     """
+
     default_error_messages = {
         'disguise': _('Phone number should not start with '
                       'one of the followings: %s.' %
@@ -63,8 +62,7 @@ class HKPhoneNumberField(CharField):
             if value.startswith(special):
                 raise ValidationError(self.error_messages['disguise'])
 
-        prefix_found = map(lambda prefix: value.startswith(prefix),
-                           hk_phone_prefixes)
+        prefix_found = map(value.startswith, hk_phone_prefixes)
         if not any(prefix_found):
             raise ValidationError(self.error_messages['prefix'])
 

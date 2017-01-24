@@ -1,13 +1,11 @@
-"""
-GB-specific Form helpers
-"""
+"""GB-specific Form helpers."""
 
 from __future__ import unicode_literals
 
 import re
 
-from django.forms.fields import CharField, Select
 from django.forms import ValidationError
+from django.forms.fields import CharField, Select
 from django.utils.translation import ugettext_lazy as _
 
 from .gb_regions import GB_NATIONS_CHOICES, GB_REGION_CHOICES
@@ -22,6 +20,7 @@ class GBPostcodeField(CharField):
 
     The value is uppercased and a space added in the correct place, if required.
     """
+
     default_error_messages = {
         'invalid': _('Enter a valid postcode.'),
     }
@@ -43,16 +42,14 @@ class GBPostcodeField(CharField):
 
 
 class GBCountySelect(Select):
-    """
-    A Select widget that uses a list of UK Counties/Regions as its choices.
-    """
+    """A Select widget that uses a list of UK Counties/Regions as its choices."""
+
     def __init__(self, attrs=None):
         super(GBCountySelect, self).__init__(attrs, choices=GB_REGION_CHOICES)
 
 
 class GBNationSelect(Select):
-    """
-    A Select widget that uses a list of UK Nations as its choices.
-    """
+    """A Select widget that uses a list of UK Nations as its choices."""
+
     def __init__(self, attrs=None):
         super(GBNationSelect, self).__init__(attrs, choices=GB_NATIONS_CHOICES)

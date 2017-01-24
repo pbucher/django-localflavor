@@ -1,6 +1,4 @@
-"""
-Swiss-specific Form helpers
-"""
+"""Swiss-specific Form helpers."""
 
 from __future__ import unicode_literals
 
@@ -12,8 +10,10 @@ from django.forms.fields import CharField, Field, RegexField, Select
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
-from .ch_states import STATE_CHOICES
+from localflavor.generic.forms import DeprecatedPhoneNumberFormFieldMixin
+
 from ..generic import validators
+from .ch_states import STATE_CHOICES
 
 zip_re = re.compile(r'^[1-9]\d{3}$')
 id_re = re.compile(
@@ -24,8 +24,9 @@ ssn_re = re.compile(r'^756.\d{4}\.\d{4}\.\d{2}$')
 
 class CHZipCodeField(RegexField):
     """
-    A form field that validates input as a Swiss zip code. Valid codes
-    consist of four digits ranging from 1XXX to 9XXX.
+    A form field that validates input as a Swiss zip code.
+
+    Valid codes consist of four digits ranging from 1XXX to 9XXX.
 
     See:
     http://en.wikipedia.org/wiki/Postal_codes_in_Switzerland_and_Liechtenstein
@@ -39,13 +40,15 @@ class CHZipCodeField(RegexField):
         super(CHZipCodeField, self).__init__(zip_re, max_length, min_length, *args, **kwargs)
 
 
-class CHPhoneNumberField(Field):
+class CHPhoneNumberField(Field, DeprecatedPhoneNumberFormFieldMixin):
     """
-    Validate local Swiss phone number (not international ones)
+    Validate local Swiss phone number (not international ones).
+
     The correct format is '0XX XXX XX XX'.
     '0XX.XXX.XX.XX' and '0XXXXXXXXX' validate but are corrected to
     '0XX XXX XX XX'.
     """
+
     default_error_messages = {
         'invalid': _('Phone numbers must be in 0XX XXX XX XX format.'),
     }
@@ -62,9 +65,8 @@ class CHPhoneNumberField(Field):
 
 
 class CHStateSelect(Select):
-    """
-    A Select widget that uses a list of CH states as its choices.
-    """
+    """A Select widget that uses a list of CH states as its choices."""
+
     def __init__(self, attrs=None):
         super(CHStateSelect, self).__init__(attrs, choices=STATE_CHOICES)
 
@@ -79,6 +81,7 @@ class CHIdentityCardNumberField(Field):
         * Included checksums match calculated checksums
 
     """
+
     default_error_messages = {
         'invalid': _('Enter a valid Swiss identity or passport card number in X1234567<0 or 1234567890 format.'),
     }
@@ -87,7 +90,6 @@ class CHIdentityCardNumberField(Field):
         given_number, given_checksum = number[:-1], number[-1]
         new_number = given_number
         calculated_checksum = 0
-        fragment = ""
         parameter = 7
 
         first = str(number[:1])
@@ -101,8 +103,8 @@ class CHIdentityCardNumberField(Field):
         if not new_number.isdigit():
             return False
 
-        for i in range(len(new_number)):
-            fragment = int(new_number[i]) * parameter
+        for digit in new_number:
+            fragment = int(digit) * parameter
             calculated_checksum += fragment
 
             if parameter == 1:
@@ -151,6 +153,7 @@ class CHSocialSecurityNumberField(CharField):
 
     .. versionadded:: 1.2
     """
+
     default_error_messages = {
         'invalid': _('Enter a valid Swiss Social Security number in 756.XXXX.XXXX.XX format.'),
     }

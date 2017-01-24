@@ -2,21 +2,24 @@
 from __future__ import unicode_literals
 
 import re
-
 import string
 
-from django.core.exceptions import ValidationError, ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.utils.deconstruct import deconstructible
 from django.utils.translation import ugettext_lazy as _
 
-from .countries.iso_3166 import ISO_3166_1_ALPHA2_COUNTRY_CODES
 from . import checksums
+from .countries.iso_3166 import ISO_3166_1_ALPHA2_COUNTRY_CODES
 
 # Dictionary of ISO country code to IBAN length.
 #
 # The official IBAN Registry document is the best source for up-to-date information about IBAN formats and which
 # countries are in IBAN.
 #
-# http://www.swift.com/dsp/resources/documents/IBAN_Registry.pdf
+# https://www.swift.com/standards/data-standards/iban
+#
+# The IBAN_COUNTRY_CODE_LENGTH dictionary has been updated version 64 of the IBAN Registry document which was published
+# in March 2016.
 #
 # Other Resources:
 #
@@ -65,6 +68,7 @@ IBAN_COUNTRY_CODE_LENGTH = {'AL': 28,  # Albania
                             'KZ': 20,  # Kazakhstan
                             'KW': 30,  # Kuwait
                             'LB': 28,  # Lebanon
+                            'LC': 32,  # Saint Lucia
                             'LI': 21,  # Liechtenstein
                             'LT': 20,  # Lithuania
                             'LU': 20,  # Luxembourg
@@ -86,13 +90,16 @@ IBAN_COUNTRY_CODE_LENGTH = {'AL': 28,  # Albania
                             'RO': 24,  # Romania
                             'RS': 22,  # Serbia
                             'SA': 24,  # Saudi Arabia
+                            'SC': 31,  # Seychelles
                             'SE': 24,  # Sweden
                             'SI': 19,  # Slovenia
                             'SK': 24,  # Slovakia
                             'SM': 27,  # San Marino
+                            'ST': 25,  # Sao Tome And Principe
                             'TL': 23,  # Timor-Leste
                             'TN': 24,  # Tunisia
                             'TR': 26,  # Turkey
+                            'UA': 29,  # Ukraine
                             'VG': 24,  # British Virgin Islands
                             'XK': 20}  # Republic of Kosovo (user-assigned country code)
 
@@ -117,29 +124,39 @@ NORDEA_COUNTRY_CODE_LENGTH = {'AO': 25,  # Angola
                               'MG': 27,  # Madagascar
                               'ML': 28,  # Mali
                               'MZ': 25,  # Mozambique
-                              'UA': 29,  # Ukraine
                               'SN': 28}  # Senegal
 
 
+@deconstructible
 class IBANValidator(object):
-    """ A validator for International Bank Account Numbers (IBAN - ISO 13616-1:2007). """
+    """A validator for International Bank Account Numbers (IBAN - ISO 13616-1:2007)."""
 
     def __init__(self, use_nordea_extensions=False, include_countries=None):
+        self.use_nordea_extensions = use_nordea_extensions
+        self.include_countries = include_countries
+
         self.validation_countries = IBAN_COUNTRY_CODE_LENGTH.copy()
-        if use_nordea_extensions:
+        if self.use_nordea_extensions:
             self.validation_countries.update(NORDEA_COUNTRY_CODE_LENGTH)
 
-        self.include_countries = include_countries
         if self.include_countries:
-            for country_code in include_countries:
+            for country_code in self.include_countries:
                 if country_code not in self.validation_countries:
-                    msg = 'Explicitly requested country code %s is not part of the configured IBAN validation set.' % country_code
+                    msg = 'Explicitly requested country code %s is not ' \
+                          'part of the configured IBAN validation set.' % country_code
                     raise ImproperlyConfigured(msg)
+
+    def __eq__(self, other):
+        return (self.use_nordea_extensions == other.use_nordea_extensions and
+                self.include_countries == other.include_countries)
 
     @staticmethod
     def iban_checksum(value):
-        """ Returns check digits for an input IBAN number. Original checksum in input value is ignored. """
+        """
+        Returns check digits for an input IBAN number.
 
+        Original checksum in input value is ignored.
+        """
         # 1. Move the two initial characters to the end of the string, replacing checksum for '00'
         value = value[4:] + value[:2] + '00'
 
@@ -185,13 +202,19 @@ class IBANValidator(object):
             raise ValidationError(_('Not a valid IBAN.'))
 
 
+@deconstructible
 class BICValidator(object):
     """
-    A validator for SWIFT Business Identifier Codes (ISO 9362:2009). Validation is based on the BIC structure found on
-    wikipedia.
+    A validator for SWIFT Business Identifier Codes (ISO 9362:2009).
+
+    Validation is based on the BIC structure found on wikipedia.
 
     https://en.wikipedia.org/wiki/ISO_9362#Structure
     """
+
+    def __eq__(self, other):
+        # The is no outside modification of properties so this should always be true by default.
+        return True
 
     def __call__(self, value):
         if value is None:
@@ -216,18 +239,24 @@ class BICValidator(object):
             raise ValidationError(_('%s is not a valid country code.') % country_code)
 
 
+@deconstructible
 class EANValidator(object):
     """
     A generic validator for EAN like codes with the last digit being the checksum.
 
     http://en.wikipedia.org/wiki/International_Article_Number_(EAN)
     """
+
     message = _('Not a valid EAN code.')
 
     def __init__(self, strip_nondigits=False, message=None):
         if message is not None:
             self.message = message
         self.strip_nondigits = strip_nondigits
+
+    def __eq__(self, other):
+        return ((not hasattr(self, 'message') or self.message == other.message) and
+                self.strip_nondigits == other.strip_nondigits)
 
     def __call__(self, value):
         if value is None:

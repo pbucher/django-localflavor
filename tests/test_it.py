@@ -4,13 +4,8 @@ from __future__ import unicode_literals
 
 from django.test import SimpleTestCase
 
-from localflavor.it.forms import (
-    ITZipCodeField, ITRegionSelect, ITRegionProvinceSelect,
-    ITSocialSecurityNumberField, ITVatNumberField, ITPhoneNumberField)
-
-# import calculated data structures
-from localflavor.it.it_province import *
-from localflavor.it.it_region import *
+from localflavor.it.forms import (ITPhoneNumberField, ITRegionProvinceSelect, ITRegionSelect,
+                                  ITSocialSecurityNumberField, ITVatNumberField, ITZipCodeField)
 
 
 class ITLocalFlavorTests(SimpleTestCase):
