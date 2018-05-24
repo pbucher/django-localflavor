@@ -1,4 +1,4 @@
-"""IE-specific Form helpers."""
+"""UK-specific Form helpers."""
 
 from django.forms.fields import Select
 

@@ -29,7 +29,6 @@ Authors
 * Daniela Ponader
 * Danielle Madeley
 * Daniel Roschka
-* Didier 'OdyX' Raboud
 * Diederik van der Boor
 * Dmitry Dygalo
 * d.merc
@@ -54,10 +53,8 @@ Authors
 * James Bennett
 * Jannis Leidel
 * Jan Pieter Waagmeester
-* Jarmo van Lenthe
 * Jérémie Ferry
 * Jocelyn Delalande
-* Johannes Hoppe
 * Johnny Lee Othon
 * Jonas Ghyllebert
 * Joseph Kocherhans

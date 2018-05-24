@@ -117,4 +117,3 @@ class USABARoutingNumberField(CharField):
         defaults = {'form_class': USABARoutingNumberFieldFormField}
         defaults.update(kwargs)
         return super(USABARoutingNumberField, self).formfield(**defaults)
-

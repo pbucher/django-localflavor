@@ -41,6 +41,7 @@ class USZipCodeField(RegexField):
             return self.empty_value
         return value.strip()
 
+
 class USSocialSecurityNumberField(CharField):
     """
     A United States Social Security number.
@@ -138,6 +139,7 @@ class USPSSelect(Select):
         from .us_states import USPS_CHOICES
         super(USPSSelect, self).__init__(attrs, choices=USPS_CHOICES)
 
+
 class USABARoutingNumberField(CharField):
     """
     A form field that validates input as a U.S. ABA routing transit number(aka bank routing number).
@@ -162,4 +164,5 @@ class USABARoutingNumberField(CharField):
         if c != 0 and c % 10 == 0:
             return value
         raise ValidationError(self.error_messages['invalid'])
+
 

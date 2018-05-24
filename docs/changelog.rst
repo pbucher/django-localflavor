@@ -1,29 +1,6 @@
 Changelog
 =========
 
-<<<<<<< HEAD
-2.1   (unreleased)
-------------------
-
-New flavors:
-
-- None
-
-New fields for existing flavors:
-
-- `NLLicensePlateField` in NL flavor.
-
-Modifications to existing flavors:
-
-- None
-
-Other changes:
-
-- Added VAT identifcation number validator for all EU locales.
-- Fix EAN validation when intermediate checksum is 10
-  (`gh-331 <https://github.com/django/django-localflavor/issues/331>`_).
-
-
 2.0   (2017-12-30)
 ------------------
 
@@ -173,14 +150,6 @@ Modifications to existing flavors:
 Other changes:
 
 - None
-
-=======
-1.4.1   (2017-01-06)
---------------------
-
-Other changes:
-
-- Added translations from Transifex.
 
 1.4   (2017-01-03)
 ------------------
